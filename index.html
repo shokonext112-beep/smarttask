@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartTask AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--bg2:#1a1a1a;--bg3:#242424;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);--text:#f0ede8;--text2:#9b9690;--text3:#5a5752;--accent:#d4a853;--accent2:#b8872a;--success:#4caf7d;--danger:#e05c5c;--warning:#e09a3a;--info:#5b9bd5;--radius:12px;--radius-sm:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:780px;margin:0 auto;padding:2rem 1.5rem 4rem}
+header{display:flex;align-items:center;gap:12px;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:0.5px solid var(--border)}
+header h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+header h1 span{color:var(--accent)}
+header p{font-size:13px;color:var(--text2);margin-left:auto}
+.tabs{display:flex;gap:0;margin-bottom:1.5rem;background:var(--bg2);border-radius:var(--radius-sm);padding:4px}
+.tab{flex:1;font-size:13px;padding:8px 12px;cursor:pointer;color:var(--text2);border:none;background:transparent;border-radius:6px;font-family:'Noto Sans JP',sans-serif;transition:all .15s;font-weight:500}
+.tab.active{background:var(--bg3);color:var(--text)}
+.tab:hover:not(.active){color:var(--text)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+label{font-size:13px;color:var(--text2);display:block;margin-bottom:5px}
+textarea,input[type=text],input[type=date],select,input[type=time]{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;padding:10px 12px;outline:none;transition:border-color .15s}
+textarea{resize:vertical;height:80px}
+textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+select{appearance:none;cursor:pointer}
+option{background:var(--bg3)}
+.row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-end}
+.field{flex:1;min-width:140px}
+button{font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:500;padding:9px 16px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+button:hover{background:var(--bg3);border-color:var(--text2)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#1a1208;font-weight:700}
+button.primary:hover{background:var(--accent2);border-color:var(--accent2)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.full{width:100%;justify-content:center}
+button.sm{font-size:12px;padding:5px 10px}
+button.danger-btn{color:var(--danger);border-color:rgba(224,92,92,.3)}
+button.danger-btn:hover{background:rgba(224,92,92,.1)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+.stat{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:12px}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.stat-value{font-size:22px;font-weight:700;color:var(--text);margin-top:2px;font-family:'DM Mono',monospace}
+.cat-toggle{display:flex;gap:6px;margin-bottom:14px}
+.cat-btn{flex:1;padding:10px;font-size:13px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;font-family:'Noto Sans JP',sans-serif;font-weight:500}
+.cat-btn.hr.active{background:rgba(91,155,213,.15);border-color:rgba(91,155,213,.5);color:var(--info)}
+.cat-btn.thd.active{background:rgba(224,154,58,.15);border-color:rgba(224,154,58,.5);color:var(--warning)}
+.goal-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;transition:border-color .15s}
+.goal-card.hr{border-left:3px solid var(--info)}
+.goal-card.thd{border-left:3px solid var(--warning)}
+.goal-card:hover{border-color:var(--border2)}
+.goal-header{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:6px}
+.goal-title{flex:1;font-size:14px;font-weight:500}
+.goal-meta{font-size:12px;color:var(--text2);margin-top:2px;font-family:'DM Mono',monospace}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
+.step-list{margin-top:12px;display:flex;flex-direction:column;gap:0}
+.step-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.step-row:last-child{border-bottom:none}
+.step-cb{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--text3);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all .15s}
+.step-cb.sel{background:rgba(91,155,213,.2);border-color:var(--info)}
+.step-cb.sel::after{content:'';width:6px;height:6px;border-radius:1px;background:var(--info)}
+.step-cb.done{background:var(--success);border-color:var(--success)}
+.step-cb.done::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
+.step-body{flex:1}
+.step-text{font-size:13px;color:var(--text);line-height:1.4}
+.step-text.done{text-decoration:line-through;color:var(--text3)}
+.step-info{font-size:11px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
+.b-high{background:rgba(224,92,92,.15);color:var(--danger)}
+.b-med{background:rgba(224,154,58,.15);color:var(--warning)}
+.b-low{background:rgba(91,155,213,.15);color:var(--info)}
+.b-ok{background:rgba(76,175,125,.15);color:var(--success)}
+.b-hr{background:rgba(91,155,213,.15);color:var(--info)}
+.b-thd{background:rgba(224,154,58,.15);color:var(--warning)}
+.sel-bar{background:rgba(91,155,213,.1);border:0.5px solid rgba(91,155,213,.3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sel-bar span{font-size:13px;color:var(--info);flex:1}
+.spinning{display:inline-block;width:14px;height:14px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-card{background:var(--bg2);border:0.5px solid rgba(76,175,125,.4);border-radius:var(--radius);padding:16px;margin-top:12px}
+.result-step{display:flex;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--border)}
+.result-step:last-child{border-bottom:none}
+.step-num{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;min-width:20px;margin-top:2px}
+.status-ok{background:rgba(76,175,125,.1);border:0.5px solid rgba(76,175,125,.3);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--success);margin-top:8px}
+.status-info{background:rgba(91,155,213,.1);border:0.5px solid rgba(91,155,213,.3);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--info);margin-bottom:8px}
+.status-warn{background:rgba(224,154,58,.1);border:0.5px solid rgba(224,154,58,.3);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--warning);margin-bottom:8px}
+.empty{text-align:center;padding:3rem;color:var(--text3);font-size:14px;line-height:2}
+.hint{font-size:12px;color:var(--text3);margin-top:6px}
+.filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.filter-btn{font-size:12px;padding:4px 12px;border-radius:20px;border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;font-family:'Noto Sans JP',sans-serif}
+.filter-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0}
+.day-btn{padding:8px 4px;font-size:12px;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;text-align:center;transition:all .15s;font-family:'Noto Sans JP',sans-serif}
+.day-btn.on{background:rgba(91,155,213,.15);border-color:rgba(91,155,213,.5);color:var(--info);font-weight:500}
+.divider{height:0.5px;background:var(--border);margin:14px 0}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.api-notice{background:rgba(212,168,83,.08);border:0.5px solid rgba(212,168,83,.25);border-radius:var(--radius-sm);padding:12px;margin-bottom:14px;font-size:13px;color:var(--text2);line-height:1.6}
+.api-notice strong{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Smart<span>Task</span> AI</h1>
+    </div>
+    <p id="today-label"></p>
+  </header>
+
+  <div id="api-key-section" class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">初回設定 — Anthropic APIキー</div>
+    <div class="api-notice">AIタスク分解機能を使うには <strong>Anthropic APIキー</strong> が必要です。<br>取得済みの場合は下に入力して保存してください。一度保存すればブラウザに記憶されます。</div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:13px">
+      <button onclick="saveApiKey()" class="primary">保存</button>
+    </div>
+    <p class="hint">APIキーは <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> で取得できます</p>
+    <div id="api-key-status" style="margin-top:8px"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('add')">✦ ゴール追加</button>
+    <button class="tab" onclick="showTab('tasks')">≡ タスク管理</button>
+    <button class="tab" onclick="showTab('export')">↓ ics出力</button>
+    <button class="tab" onclick="showTab('settings')">⚙ 稼働日設定</button>
+  </div>
+
+  <!-- ADD -->
+  <div class="panel active" id="panel-add">
+    <div class="card">
+      <div class="card-title">仕事カテゴリ</div>
+      <div class="cat-toggle">
+        <button class="cat-btn hr active" id="cat-hr" onclick="setCategory('hr')">💼 人事</button>
+        <button class="cat-btn thd" id="cat-thd" onclick="setCategory('thd')">💍 結婚相談所</button>
+      </div>
+      <div class="card-title">ゴールを入力</div>
+      <div class="row">
+        <div class="field" style="flex:2">
+          <label>やりたいこと・目標</label>
+          <textarea id="goal-input" placeholder="例：採用面接フローを見直す、新規会員獲得キャンペーンを企画する、など具体的に書くほど精度が上がります"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>完了期日</label>
+          <input type="date" id="goal-date">
+        </div>
+        <div class="field">
+          <label>ステップ数</label>
+          <select id="goal-steps">
+            <option value="5">5ステップ</option>
+            <option value="7" selected>7ステップ</option>
+            <option value="10">10ステップ</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>所要時間/タスク</label>
+          <select id="task-dur">
+            <option value="30">30分</option>
+            <option value="60" selected>1時間</option>
+            <option value="90">1.5時間</option>
+            <option value="120">2時間</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">AIが期日から逆算してステップを分解します（Ctrl+Enter でも送信）</p>
+      <div style="margin-top:14px">
+        <button class="primary full" onclick="generateTasks()" id="gen-btn">✦ AIにタスク分解してもらう</button>
+      </div>
+    </div>
+    <div id="gen-result"></div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="panel" id="panel-tasks">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">ゴール</div><div class="stat-value" id="s-goals">0</div></div>
+      <div class="stat"><div class="stat-label">ステップ</div><div class="stat-value" id="s-steps">0</div></div>
+      <div class="stat"><div class="stat-label">完了</div><div class="stat-value" id="s-done">0</div></div>
+      <div class="stat"><div class="stat-label">選択中</div><div class="stat-value" id="s-sel">0</div></div>
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all',this)">すべて</button>
+      <button class="filter-btn" onclick="setFilter('hr',this)">💼 人事</button>
+      <button class="filter-btn" onclick="setFilter('thd',this)">💍 結婚相談所</button>
+      <button class="filter-btn" onclick="setFilter('todo',this)">未完了のみ</button>
+    </div>
+    <div id="sel-bar-area"></div>
+    <div id="goal-list"><div class="empty">まだゴールがありません<br>「ゴール追加」から始めましょう</div></div>
+  </div>
+
+  <!-- EXPORT -->
+  <div class="panel" id="panel-export">
+    <div class="card">
+      <div class="card-title">💼 人事カレンダー用</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6">人事タスクの選択済みステップを出力します。<br>→ 山下翔子カレンダー（人事）にインポート</p>
+      <div id="hr-summary" style="margin-bottom:10px"></div>
+      <button onclick="generateICS('hr')">↓ 人事用 ics をダウンロード</button>
+      <div id="hr-result"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💍 結婚相談所カレンダー用</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6">結婚相談所タスクの選択済みステップを出力します。<br>→ 【THD】山下翔子カレンダーにインポート</p>
+      <div id="thd-summary" style="margin-bottom:10px"></div>
+      <button onclick="generateICS('thd')">↓ 結婚相談所用 ics をダウンロード</button>
+      <div id="thd-result"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Googleカレンダーへのインポート手順</div>
+      <ol style="font-size:13px;color:var(--text2);line-height:2.4;padding-left:1.2rem">
+        <li>上のボタンで ics ファイルをダウンロード</li>
+        <li>Googleカレンダーを開く（対象アカウントで）</li>
+        <li>左サイドバー「他のカレンダー」の <strong style="color:var(--text)">+</strong> → 「インポート」</li>
+        <li>ics ファイルを選択 → インポート先のカレンダーを指定 → 完了</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="panel" id="panel-settings">
+    <div class="card">
+      <div class="card-title">稼働曜日</div>
+      <div class="day-grid">
+        <button class="day-btn on" data-day="0" onclick="toggleDay(0)">月</button>
+        <button class="day-btn on" data-day="1" onclick="toggleDay(1)">火</button>
+        <button class="day-btn on" data-day="2" onclick="toggleDay(2)">水</button>
+        <button class="day-btn on" data-day="3" onclick="toggleDay(3)">木</button>
+        <button class="day-btn on" data-day="4" onclick="toggleDay(4)">金</button>
+        <button class="day-btn" data-day="5" onclick="toggleDay(5)">土</button>
+        <button class="day-btn" data-day="6" onclick="toggleDay(6)">日</button>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">稼働時間帯</div>
+      <div class="row">
+        <div class="field"><label>開始</label><input type="time" id="work-start" value="09:00"></div>
+        <div class="field"><label>終了</label><input type="time" id="work-end" value="18:00"></div>
+      </div>
+      <div class="divider"></div>
+      <div class="card-title">除外時間帯（毎日）</div>
+      <div id="blocked-list" style="margin-bottom:10px"><p style="font-size:12px;color:var(--text3)">なし</p></div>
+      <div class="row" style="align-items:center;flex-wrap:nowrap">
+        <input type="time" id="block-s" value="12:00" style="width:110px">
+        <span style="font-size:13px;color:var(--text2);white-space:nowrap">〜</span>
+        <input type="time" id="block-e" value="13:00" style="width:110px">
+        <button onclick="addBlock()" style="padding:8px 14px;white-space:nowrap">+ 追加</button>
+      </div>
+      <p class="hint">例：12:00〜13:00のランチタイムを除外</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let goals=JSON.parse(localStorage.getItem('st_goals')||'[]');
+let expanded={};
+let selectedSteps=new Set();
+let workDays=new Set([0,1,2,3,4]);
+let blockedTimes=[];
+let nextId=Date.now();
+let currentCat='hr';
+let taskFilter='all';
+let apiKey=localStorage.getItem('st_apikey')||'';
+
+document.getElementById('today-label').textContent=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+const d1=new Date();d1.setMonth(d1.getMonth()+1);
+document.getElementById('goal-date').min=new Date().toISOString().split('T')[0];
+document.getElementById('goal-date').value=d1.toISOString().split('T')[0];
+
+if(apiKey){
+  document.getElementById('api-key-input').value=apiKey;
+  document.getElementById('api-key-status').innerHTML='<p style="font-size:12px;color:#4caf7d">✓ APIキー設定済み</p>';
+}
+
+function saveApiKey(){
+  const v=document.getElementById('api-key-input').value.trim();
+  if(!v||!v.startsWith('sk-ant-')){
+    document.getElementById('api-key-status').innerHTML='<p style="font-size:12px;color:#e05c5c">正しいAPIキーを入力してください（sk-ant- で始まるもの）</p>';
+    return;
+  }
+  apiKey=v;
+  localStorage.setItem('st_apikey',v);
+  document.getElementById('api-key-status').innerHTML='<p style="font-size:12px;color:#4caf7d">✓ 保存しました！</p>';
+}
+
+function save(){localStorage.setItem('st_goals',JSON.stringify(goals));}
+
+function showTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const idx=['add','tasks','export','settings'].indexOf(t);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='tasks')renderGoals();
+  if(t==='export')renderExport();
+}
+
+function setCategory(cat){
+  currentCat=cat;
+  document.getElementById('cat-hr').classList.toggle('active',cat==='hr');
+  document.getElementById('cat-thd').classList.toggle('active',cat==='thd');
+}
+
+function setFilter(f,btn){
+  taskFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGoals();
+}
+
+function toggleDay(d){
+  if(workDays.has(d))workDays.delete(d);else workDays.add(d);
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('on',workDays.has(parseInt(b.dataset.day))));
+}
+
+function addBlock(){
+  const s=document.getElementById('block-s').value,e=document.getElementById('block-e').value;
+  if(!s||!e||s>=e)return;
+  blockedTimes.push({s,e});renderBlocked();
+}
+function removeBlock(i){blockedTimes.splice(i,1);renderBlocked();}
+function renderBlocked(){
+  const el=document.getElementById('blocked-list');
+  if(!blockedTimes.length){el.innerHTML='<p style="font-size:12px;color:#5a5752">なし</p>';return;}
+  el.innerHTML=blockedTimes.map((b,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:4px 0"><span style="font-size:13px;color:#9b9690">${b.s} 〜 ${b.e}</span><button onclick="removeBlock(${i})" class="danger-btn sm">✕</button></div>`).join('');
+}
+
+async function generateTasks(){
+  if(!apiKey){alert('先にAPIキーを設定してください');return;}
+  const goal=document.getElementById('goal-input').value.trim();
+  const deadline=document.getElementById('goal-date').value;
+  const steps=document.getElementById('goal-steps').value;
+  const dur=document.getElementById('task-dur').value;
+  if(!goal){alert('ゴールを入力してください');return;}
+  if(!deadline){alert('完了期日を入力してください');return;}
+  const btn=document.getElementById('gen-btn');btn.disabled=true;
+  const res=document.getElementById('gen-result');
+  res.innerHTML='<div style="font-size:13px;color:#9b9690;padding:12px;background:#1a1a1a;border-radius:8px;margin-top:8px"><span class="spinning"></span>AIがタスクを分解中...</div>';
+  const tstr=new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  const dstr=new Date(deadline).toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+  const catLabel=currentCat==='hr'?'人事':'結婚相談所';
+  const prompt=`タスク管理の専門家として、${catLabel}の仕事に関する以下のゴールを${steps}個のスモールステップに分解してください。\nゴール: ${goal}\n今日: ${tstr}\n完了期日: ${dstr}\n各タスク目安: ${dur}分\n\nJSON形式のみで回答。前置き・コードブロック不要。\n{"goal":"${goal}","steps":[{"text":"タスク名（20字以内）","deadline":"YYYY-MM-DD","priority":"high|med|low","reason":"期日の根拠（15字以内）","durationMin":${dur}}]}\n\nルール: 期日は今日〜完了期日の間で逆算配置。最初/最後はhigh、中間はmed/low。最後のステップ期日は完了期日。`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    const data=await r.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content.map(c=>c.text||'').join('');
+    const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const gobj={id:nextId++,title:parsed.goal||goal,deadline,category:currentCat,steps:parsed.steps.map((s,i)=>({...s,id:nextId++,done:false,selected:false}))};
+    goals.unshift(gobj);expanded[gobj.id]=true;save();
+    res.innerHTML=`<div class="result-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="color:#4caf7d;font-size:18px">✓</span>
+        <span style="font-size:14px;font-weight:500">${gobj.steps.length}ステップに分解しました</span>
+        <span class="badge b-${currentCat}">${currentCat==='hr'?'💼 人事':'💍 結婚相談所'}</span>
+      </div>
+      ${gobj.steps.map((s,i)=>`<div class="result-step"><span class="step-num">${String(i+1).padStart(2,'0')}</span><div style="flex:1"><div style="font-size:13px;color:#f0ede8">${s.text}</div><div style="font-size:11px;color:#5a5752;font-family:'DM Mono',monospace;margin-top:2px">${s.deadline}　${s.reason||''}</div></div><span class="badge b-${s.priority}">${s.priority==='high'?'高':s.priority==='med'?'中':'低'}</span></div>`).join('')}
+      <button class="full" style="margin-top:14px" onclick="showTab('tasks')">≡ タスク管理で確認・選択する</button>
+    </div>`;
+    document.getElementById('goal-input').value='';
+  }catch(e){res.innerHTML=`<div style="font-size:13px;color:#e05c5c;padding:12px;background:#1a1a1a;border-radius:8px;margin-top:8px">エラー: ${e.message}</div>`;}
+  btn.disabled=false;
+}
+
+document.getElementById('goal-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)generateTasks();});
+
+function toggleSelect(gid,sid){
+  const g=goals.find(g=>g.id===gid);const s=g&&g.steps.find(s=>s.id===sid);
+  if(!s||s.done)return;s.selected=!s.selected;
+  if(s.selected)selectedSteps.add(sid);else selectedSteps.delete(sid);
+  renderGoals();
+}
+function toggleDone(gid,sid){
+  const g=goals.find(g=>g.id===gid);const s=g&&g.steps.find(s=>s.id===sid);
+  if(s){s.done=!s.done;if(s.done){s.selected=false;selectedSteps.delete(sid);}save();renderGoals();}
+}
+function deleteGoal(gid){
+  if(!confirm('このゴールを削除しますか？'))return;
+  const g=goals.find(g=>g.id===gid);if(g)g.steps.forEach(s=>selectedSteps.delete(s.id));
+  goals=goals.filter(g=>g.id!==gid);save();renderGoals();
+}
+function selectAllGoal(gid){
+  const g=goals.find(g=>g.id===gid);if(!g)return;
+  const allSel=g.steps.filter(s=>!s.done).every(s=>s.selected);
+  g.steps.forEach(s=>{if(!s.done){s.selected=!allSel;if(!allSel)selectedSteps.add(s.id);else selectedSteps.delete(s.id);}});
+  renderGoals();
+}
+function toggleGoal(id){expanded[id]=!expanded[id];renderGoals();}
+function clearSelection(){goals.forEach(g=>g.steps.forEach(s=>{s.selected=false;selectedSteps.delete(s.id);}));renderGoals();}
+
+function renderGoals(){
+  updateStats();
+  const selCount=selectedSteps.size;
+  document.getElementById('sel-bar-area').innerHTML=selCount?`<div class="sel-bar"><span>${selCount}件選択中</span><button onclick="showTab('export')" style="font-size:12px;padding:5px 10px">↓ ics出力へ</button><button onclick="clearSelection()" style="font-size:12px;padding:5px 10px;color:#9b9690">解除</button></div>`:'';
+  let filtered=goals;
+  if(taskFilter==='hr')filtered=goals.filter(g=>g.category==='hr');
+  else if(taskFilter==='thd')filtered=goals.filter(g=>g.category==='thd');
+  else if(taskFilter==='todo')filtered=goals.filter(g=>g.steps.some(s=>!s.done));
+  const el=document.getElementById('goal-list');
+  if(!filtered.length){el.innerHTML='<div class="empty">ゴールがありません</div>';return;}
+  el.innerHTML=filtered.map(g=>{
+    const done=g.steps.filter(s=>s.done).length;
+    const sel=g.steps.filter(s=>s.selected).length;
+    const pct=Math.round(done/g.steps.length*100);
+    const isOpen=expanded[g.id];
+    return`<div class="goal-card ${g.category}">
+      <div class="goal-header" onclick="toggleGoal(${g.id})">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+            <span class="badge b-${g.category}">${g.category==='hr'?'💼 人事':'💍 結婚相談所'}</span>
+            <span class="goal-title">${g.title}</span>
+          </div>
+          <div class="goal-meta">期日 ${g.deadline}　完了 ${done}/${g.steps.length}${sel?`　<span style="color:#5b9bd5">選択 ${sel}</span>`:''}</div>
+        </div>
+        <button onclick="event.stopPropagation();selectAllGoal(${g.id})" class="sm">全選択</button>
+        <button onclick="event.stopPropagation();deleteGoal(${g.id})" class="sm danger-btn">✕</button>
+        <span style="font-size:14px;color:#5a5752;margin-left:4px">${isOpen?'▲':'▼'}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      ${isOpen?`<div class="step-list">${g.steps.map(s=>`
+        <div class="step-row">
+          <div class="step-cb ${s.done?'done':s.selected?'sel':''}" onclick="toggleSelect(${g.id},${s.id})" title="${s.done?'完了済み':'クリックで選択'}"></div>
+          <div class="step-body">
+            <div class="step-text ${s.done?'done':''}">${s.text}</div>
+            <div class="step-info">期日 ${s.deadline}　${s.durationMin||60}分　${s.reason||''}</div>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <span class="badge b-${s.priority}">${s.priority==='high'?'高':s.priority==='med'?'中':'低'}</span>
+            ${s.done?'<span class="badge b-ok">完了</span>':s.selected?'<span class="badge" style="background:rgba(91,155,213,.15);color:#5b9bd5">選択</span>':''}
+          </div>
+          <button onclick="toggleDone(${g.id},${s.id})" class="sm" style="color:${s.done?'#5a5752':'#4caf7d'}">${s.done?'戻す':'完了'}</button>
+        </div>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function updateStats(){
+  const all=goals.flatMap(g=>g.steps);
+  document.getElementById('s-goals').textContent=goals.length;
+  document.getElementById('s-steps').textContent=all.length;
+  document.getElementById('s-done').textContent=all.filter(s=>s.done).length;
+  document.getElementById('s-sel').textContent=selectedSteps.size;
+}
+
+function renderExport(){
+  const hrSel=goals.filter(g=>g.category==='hr').flatMap(g=>g.steps.filter(s=>s.selected&&!s.done));
+  const thdSel=goals.filter(g=>g.category==='thd').flatMap(g=>g.steps.filter(s=>s.selected&&!s.done));
+  document.getElementById('hr-summary').innerHTML=hrSel.length?`<div class="status-info">${hrSel.length}件の人事タスクが選択されています</div>`:`<p style="font-size:13px;color:#5a5752">人事タスクが選択されていません</p>`;
+  document.getElementById('thd-summary').innerHTML=thdSel.length?`<div class="status-info">${thdSel.length}件の結婚相談所タスクが選択されています</div>`:`<p style="font-size:13px;color:#5a5752">結婚相談所タスクが選択されていません</p>`;
+}
+
+function addMinutes(hhmm,mins){const[h,m]=hhmm.split(':').map(Number);const t=h*60+m+mins;return`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
+function isWorkDay(date){return workDays.has((date.getDay()+6)%7);}
+function isBlockedTime(hhmm){for(const b of blockedTimes){if(hhmm>=b.s&&hhmm<b.e)return true;}return false;}
+function findNextSlot(fromDate,dur){
+  const ws=document.getElementById('work-start').value||'09:00';
+  const we=document.getElementById('work-end').value||'18:00';
+  let cur=new Date(fromDate);cur.setHours(0,0,0,0);
+  let ct=ws;let att=0;
+  while(att<365){
+    if(isWorkDay(cur)){
+      let t=ct<ws?ws:ct;
+      while(t<we){
+        const end=addMinutes(t,dur);
+        if(end>we)break;
+        if(!isBlockedTime(t)){
+          const s=new Date(cur),e=new Date(cur);
+          const[sh,sm]=t.split(':').map(Number);const[eh,em]=end.split(':').map(Number);
+          s.setHours(sh,sm,0,0);e.setHours(eh,em,0,0);
+          return{start:s,end:e};
+        }
+        t=addMinutes(t,30);
+      }
+    }
+    cur.setDate(cur.getDate()+1);ct=ws;att++;
+  }
+  return null;
+}
+function toICS(dt){const p=n=>String(n).padStart(2,'0');return`${dt.getFullYear()}${p(dt.getMonth()+1)}${p(dt.getDate())}T${p(dt.getHours())}${p(dt.getMinutes())}00`;}
+
+function generateICS(cat){
+  const sel=goals.filter(g=>g.category===cat).flatMap(g=>g.steps.filter(s=>s.selected&&!s.done).map(s=>({...s,goalTitle:g.title,gid:g.id})));
+  if(!sel.length){alert(`${cat==='hr'?'人事':'結婚相談所'}のタスクが選択されていません`);showTab('tasks');return;}
+  const sorted=[...sel].sort((a,b)=>a.deadline.localeCompare(b.deadline));
+  let curSlot=new Date();curSlot.setHours(0,0,0,0);
+  const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//SmartTask AI//JA','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  const placed=[];
+  for(const task of sorted){
+    const dur=task.durationMin||60;
+    const dl=new Date(task.deadline+'T23:59:59');
+    const slot=findNextSlot(curSlot,dur);
+    let start,end;
+    if(!slot||slot.start>dl){
+      const ws=document.getElementById('work-start').value||'09:00';
+      const[fh,fm]=ws.split(':').map(Number);
+      start=new Date(task.deadline);start.setHours(fh,fm,0,0);
+      end=new Date(start.getTime()+dur*60000);
+    }else{start=slot.start;end=slot.end;}
+    lines.push('BEGIN:VEVENT',`DTSTART:${toICS(start)}`,`DTEND:${toICS(end)}`,`SUMMARY:[${task.goalTitle}] ${task.text}`,`DESCRIPTION:優先度:${task.priority==='high'?'高':task.priority==='med'?'中':'低'} / ${task.reason||''}`,`UID:smarttask-${task.id}-${Date.now()}@st`,'END:VEVENT');
+    placed.push({text:task.text,start});
+    curSlot=end;
+  }
+  lines.push('END:VCALENDAR');
+  const blob=new Blob([lines.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`tasks_${cat}_${new Date().toISOString().split('T')[0]}.ics`;a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById(`${cat}-result`).innerHTML=`<div class="status-ok"><span>✓ ${placed.length}件をics出力しました</span><br><span style="font-size:11px;opacity:.7">${placed.map(p=>`${p.start.toLocaleDateString('ja-JP')} ${p.start.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})} ${p.text}`).join(' / ')}</span></div>`;
+}
+
+updateStats();
+</script>
+</body>
+</html>
